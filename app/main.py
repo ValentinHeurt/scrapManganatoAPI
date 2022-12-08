@@ -2,7 +2,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 #import cloudscraper
-from fastapi import FastAPI,Query
+from fastapi import FastAPI,Query, Header
 from fastapi.responses import Response
 from pydantic import BaseModel
 from fpdf import FPDF
@@ -21,7 +21,12 @@ app = FastAPI()
 # Search :
 # Return un json type : {"nom" : "Naruto", "url":"url de naruto", "imageUrl":"Url de l'image de naruto"}
 @app.get("/search")
-def Search(textSearch : str = "", ig : list[str] | None = Query(default=None,max_length=47), eg : list[str] | None = Query(default=None), orderBy : str ="", status : str ="", page : str ="1"):
+def Search(textSearch : str | None = Header(default=""),
+           ig : list[str] | None = Header(default=None),
+           eg : list[str] | None = Header(default=None),
+           orderBy : str | None = Header(default=""),
+           status : str | None = Header(default=""),
+           page : str | None = Header(default="")):
     url = 'https://manganato.com/advanced_search?s=all'
     if ig != None:
         url = f"{url}&g_i="
@@ -65,7 +70,7 @@ def Search(textSearch : str = "", ig : list[str] | None = Query(default=None,max
         return mangaList
 
 @app.get("/manga")
-def GetDataManga(url : str):
+def GetDataManga(url : str | None = Header()):
     response = requests.get(url)
     manga = {}
     if response.ok:
@@ -118,7 +123,7 @@ def GetDataManga(url : str):
         return manga
 
 @app.get("/mangaPages")
-def getManga(url : str):
+def getManga(url : str| None = Header()):
     response = requests.get(url)
     pagesList = []
     if response.ok:
@@ -129,7 +134,7 @@ def getManga(url : str):
     return pagesList
 
 @app.get("/downloadChapter")
-def downloadChapter(url : str):
+def downloadChapter(url : str| None = Header()):
     pages = getManga(url)
     pdf = FPDF("P", "mm", "A4")
     for page in pages:
