@@ -21,13 +21,17 @@ app = FastAPI()
 # Search :
 # Return un json type : {"nom" : "Naruto", "url":"url de naruto", "imageUrl":"Url de l'image de naruto"}
 @app.get("/search")
-def Search(textSearch : str | None = Header(default=""),
+def search(textSearch : str | None = Header(default=""),
            ig : list[str] | None = Header(default=None),
            eg : list[str] | None = Header(default=None),
            orderBy : str | None = Header(default=""),
            status : str | None = Header(default=""),
            page : str | None = Header(default="")):
     url = 'https://manganato.com/advanced_search?s=all'
+
+    if genresList == {}:
+        get_genres()
+
     if ig != None:
         url = f"{url}&g_i="
         for includedGenre in ig:
@@ -70,7 +74,7 @@ def Search(textSearch : str | None = Header(default=""),
         return mangaList
 
 @app.get("/manga")
-def GetDataManga(url : str | None = Header()):
+def get_data_manga(url : str | None = Header()):
     response = requests.get(url)
     manga = {}
     if response.ok:
@@ -123,7 +127,7 @@ def GetDataManga(url : str | None = Header()):
         return manga
 
 @app.get("/mangaPages")
-def getManga(url : str| None = Header()):
+def get_manga(url : str| None = Header()):
     response = requests.get(url)
     pagesList = []
     if response.ok:
@@ -133,9 +137,20 @@ def getManga(url : str| None = Header()):
         pagesList = [page["src"] for page in pages]
     return pagesList
 
+@app.get("/genres")
+def get_genres():
+    response = requests.get("https://manganato.com/advanced_search?s=all&page=1")
+    if response.ok:
+        soup = BeautifulSoup(response.text, "html.parser")
+        genresContainer = soup.find("div",{"class":"advanced-search-tool-genres-list"})
+        genres = genresContainer.find_all("span",{"class":"advanced-search-tool-genres-item-choose advanced-search-tool-genres-item a-h text-nowrap"})
+        genresList ={}
+        for genre in genres:
+            genresList[genre["title"].replace(" Manga", "")] = genre["data-i"]
+        return genresList
 @app.get("/downloadChapter")
-def downloadChapter(url : str| None = Header()):
-    pages = getManga(url)
+def download_chapter(url : str| None = Header()):
+    pages = get_manga(url)
     pdf = FPDF("P", "mm", "A4")
     for page in pages:
 
@@ -158,9 +173,22 @@ def downloadChapter(url : str| None = Header()):
     content = pdf.output(dest='S')
     return Response(bytes(content), media_type="application/pdf", headers = {'Content-Disposition': 'attachment; filename="out.pdf"'})
 
+@app.get("/downloadPage")
+def download_page(url : str | None = Query()):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:107.0) Gecko/20100101 Firefox/107.0',
+        'Accept': 'image/avif,image/webp,*/*',
+        'Accept-Language': 'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3',
+        # 'Accept-Encoding': 'gzip, deflate, br',
+        'Referer': 'https://chapmanganato.com/',
+    }
+    res = requests.get(url, headers=headers)
+    if res.ok:
+        return Response(res.content)
 
 
-def getProxies():
+
+def get_proxies():
     res = requests.get("https://free-proxy-list.net")
     content = BeautifulSoup(res.text, 'html.parser')
     table = content.find('table')
@@ -194,8 +222,6 @@ def fetchUrl(req):
 """
 
 if __name__ == '__main__':
-
-    f = open("./app/Config/genres.json")
-    genresList = json.load(f)
+    get_genres()
 
     uvicorn.run(app, port=8000, host="0.0.0.0")
