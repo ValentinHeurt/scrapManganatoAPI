@@ -28,10 +28,8 @@ def search(textSearch : str | None = Header(default=""),
            status : str | None = Header(default=""),
            page : str | None = Header(default="")):
     url = 'https://manganato.com/advanced_search?s=all'
-
     if genresList == {}:
         get_genres()
-
     if ig != None:
         url = f"{url}&g_i="
         for includedGenre in ig:
@@ -144,7 +142,8 @@ def get_genres():
         soup = BeautifulSoup(response.text, "html.parser")
         genresContainer = soup.find("div",{"class":"advanced-search-tool-genres-list"})
         genres = genresContainer.find_all("span",{"class":"advanced-search-tool-genres-item-choose advanced-search-tool-genres-item a-h text-nowrap"})
-        genresList ={}
+        global  genresList
+        genresList = {}
         for genre in genres:
             genresList[genre["title"].replace(" Manga", "")] = genre["data-i"]
         return genresList
