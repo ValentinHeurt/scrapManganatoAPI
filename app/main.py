@@ -51,6 +51,8 @@ def search(textSearch : str | None = Header(default=""),
     url = f"{url}&page={page}"
 
     if textSearch != "":
+        textSearch = textSearch.lower()
+        textSearch = textSearch.replace(" ", "_")
         url = f"{url}&keyw={textSearch}"
 
     print(url)
