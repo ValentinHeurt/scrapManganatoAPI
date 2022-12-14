@@ -29,22 +29,22 @@ def search(textSearch: str | None = Header(default=""),
            orderBy: str | None = Header(default=""),
            status: str | None = Header(default=""),
            page: str | None = Header(default="1"),
-           body: Body | None = None):
+           ig: list[str] = Query(None),
+           eg: list[str] = Query(None)):
     url = 'https://manganato.com/advanced_search?s=all'
     if genresList == {}:
         get_genres()
-    if body != None:
-        if body.ig != None:
-            url = f"{url}&g_i="
-            for includedGenre in body.ig:
-                url = f"{url}_{genresList[includedGenre]}"
-            url = f"{url}_"
+    if ig != None:
+        url = f"{url}&g_i="
+        for includedGenre in ig:
+            url = f"{url}_{genresList[includedGenre]}"
+        url = f"{url}_"
 
-        if body.eg != None:
-            url = f"{url}&g_e="
-            for excludedGenre in body.eg:
-                url = f"{url}_{genresList[excludedGenre]}"
-            url = f"{url}_"
+    if eg != None:
+        url = f"{url}&g_e="
+        for excludedGenre in eg:
+            url = f"{url}_{genresList[excludedGenre]}"
+        url = f"{url}_"
 
     if orderBy != "":
         url = f"{url}&orby={orderBy}"
