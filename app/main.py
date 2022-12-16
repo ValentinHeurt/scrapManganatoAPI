@@ -115,7 +115,7 @@ def get_data_manga(url: str | None = Header()):
 
         manga["description"] = list(soup.find("div", {"id": "panel-story-info-description"}).children)[-1].translate(
             translator)
-        manga["imageURL"] = str(soup.find("img", {"class": "img-loading"})["src"])
+        manga["imageURL"] = str(soup.find("span", {"class": "info-image"}).find("img", {"class":"img-loading"})["src"])
 
         chapters = []
 
