@@ -1,6 +1,6 @@
 import json
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag, NavigableString
 # import cloudscraper
 from fastapi import FastAPI, Query, Header
 from fastapi.responses import Response
@@ -113,8 +113,13 @@ def get_data_manga(url: str | None = Header()):
         escapes = ''.join(chars)
         translator = str.maketrans('', '', escapes)
 
-        manga["description"] = list(soup.find("div", {"id": "panel-story-info-description"}).children)[-1].translate(
-            translator)
+        desc = list(soup.find("div", {"id": "panel-story-info-description"}).children)
+        manga["description"] = ""
+        for i in desc:
+            if isinstance(i,NavigableString) and i.text != "\n":
+                manga["description"] = manga["description"] + i.text + " "
+
+        manga["description"] = manga["description"].translate(translator)
         manga["imageURL"] = str(soup.find("span", {"class": "info-image"}).find("img", {"class":"img-loading"})["src"])
 
         chapters = []
