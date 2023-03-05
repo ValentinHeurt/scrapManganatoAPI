@@ -159,9 +159,12 @@ def get_genres():
         genres = genresContainer.find_all("span", {
             "class": "advanced-search-tool-genres-item-choose advanced-search-tool-genres-item a-h text-nowrap"})
         global genresList
-        genresList = {}
-        for genre in genres:
-            genresList[genre["title"].replace(" Manga", "")] = genre["data-i"]
+        genresList = []
+        for g in genres:
+            genre = {}
+            genre["genre"] = g["title"].replace(" Manga", "")
+            genre["id"] = g["data-i"]
+            genresList.append(genre)
         return genresList
 
 
