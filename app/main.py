@@ -37,13 +37,13 @@ def search(textSearch: str | None = Header(default=""),
     if ig != None:
         url = f"{url}&g_i="
         for includedGenre in ig:
-            url = f"{url}_{[genre['id'] for genre in genresList if genre['genre' == includedGenre]]}"
+            url = f"{url}_{[genre['id'] for genre in genresList if genre['genre'] == includedGenre]}"
         url = f"{url}_"
 
     if eg != None:
         url = f"{url}&g_e="
         for excludedGenre in eg:
-            url = f"{url}_{[genre['id'] for genre in genresList if genre['genre' == excludedGenre]]}"
+            url = f"{url}_{[genre['id'] for genre in genresList if genre['genre'] == excludedGenre]}"
         url = f"{url}_"
 
     if orderBy != "":
