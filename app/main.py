@@ -31,6 +31,22 @@ def search(textSearch: str | None = Header(default=""),
            page: str | None = Header(default="1"),
            ig: list[str] = Query(None),
            eg: list[str] = Query(None)):
+
+    if ig is not None or eg is not None or orderBy != "" or status != "":
+        mangaList = search_multiple_input(textSearch, orderBy, status, page, ig, eg)
+        print("multiple input search")
+        return mangaList
+    else:
+        mangaList = search_only_keyword(textSearch, page)
+        print("only keyword search")
+        return  mangaList
+
+def search_multiple_input(textSearch: str | None = Header(default=""),
+           orderBy: str | None = Header(default=""),
+           status: str | None = Header(default=""),
+           page: str | None = Header(default="1"),
+           ig: list[str] = Query(None),
+           eg: list[str] = Query(None)):
     url = 'https://manganato.com/advanced_search?s=all'
     if genresList == {}:
         get_genres()
@@ -63,7 +79,6 @@ def search(textSearch: str | None = Header(default=""),
     mangaList = []
     response = requests.get(url)
     if response.ok:
-        manga = {}
         soup = BeautifulSoup(response.text, "html.parser")
         genreItemInfos = soup.findAll("a", {"class": "genres-item-img bookmark_check"})
         for mangaInfos in genreItemInfos:
@@ -76,6 +91,24 @@ def search(textSearch: str | None = Header(default=""),
             mangaList.append(manga)
         print(mangaList)
         return mangaList
+def search_only_keyword(textSearch: str, page: str | None = Header(default="1")):
+    url = f"https://manganato.com/search/story/{textSearch}?page={page}"
+    print(url)
+    response = requests.get(url)
+    mangaList = []
+    if response.ok:
+        soup = BeautifulSoup(response.text, "html.parser")
+        itemInfos = soup.findAll("a", {"class": "item-img bookmark_check"})
+        for mangaInfo in itemInfos:
+            manga = {}
+            manga["name"] = mangaInfo["title"]
+            manga["url"] = mangaInfo["href"]
+            img = mangaInfo.find("img")
+            manga["imageURL"] = img["src"]
+            mangaList.append(manga)
+        print(mangaList)
+        return mangaList
+
 
 
 @app.get("/manga")
@@ -246,6 +279,5 @@ def fetchUrl(req):
 
 if __name__ == '__main__':
     get_genres()
-
     uvicorn.run(app, port=8000, host="0.0.0.0")
 
