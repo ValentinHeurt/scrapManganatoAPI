@@ -32,14 +32,14 @@ def search(textSearch: str | None = Header(default=""),
            ig: list[str] = Query(None),
            eg: list[str] = Query(None)):
 
-    if ig is not None or eg is not None or orderBy != "" or status != "":
-        mangaList = search_multiple_input(textSearch, orderBy, status, page, ig, eg)
-        print("multiple input search")
-        return mangaList
+    if ig is not None or eg is not None or orderBy != "" or status != "" or textSearch == "":
+            mangaList = search_multiple_input(textSearch, orderBy, status, page, ig, eg)
+            print("multiple input search")
+            return mangaList
     else:
         mangaList = search_only_keyword(textSearch, page)
         print("only keyword search")
-        return  mangaList
+        return mangaList
 
 def search_multiple_input(textSearch: str | None = Header(default=""),
            orderBy: str | None = Header(default=""),
@@ -92,6 +92,9 @@ def search_multiple_input(textSearch: str | None = Header(default=""),
         print(mangaList)
         return mangaList
 def search_only_keyword(textSearch: str, page: str | None = Header(default="1")):
+    if textSearch != "":
+        textSearch = textSearch.lower()
+        textSearch = textSearch.replace(" ", "_")
     url = f"https://manganato.com/search/story/{textSearch}?page={page}"
     print(url)
     response = requests.get(url)
